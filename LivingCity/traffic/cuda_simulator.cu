@@ -257,8 +257,9 @@ __device__ void check_stagnation(int agent_id, LC::Agent &agent,
       return;
     }
     // try to place the agent to the queue again
-    intersection.init_queue[intersection.init_queue_rear] = agent_id;
-    intersection.init_queue_rear += 1;
+    // Use atomic operation to prevent race condition
+    uint requeue_index = atomicAdd(&(intersection.init_queue_rear), 1);
+    intersection.init_queue[requeue_index] = agent_id;
   }
   auto &queue = intersection.queue[agent.queue_idx];
   auto &queue_ptr = intersection.pos[agent.queue_idx];
