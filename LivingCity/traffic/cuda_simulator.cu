@@ -217,9 +217,9 @@ __device__ void initialize_agent(int agent_id, LC::Agent &agent,
   }
   // add to corresponding queue
   auto &intersection = intersections[agent.init_intersection];
-  intersection.init_queue[intersection.init_queue_rear] = agent_id;
-  intersection.init_queue_rear += 1;
-  //  atomicAdd(&(intersection.init_queue_rear), 1);
+  // Use atomic operation to prevent race condition
+  uint queue_index = atomicAdd(&(intersection.init_queue_rear), 1);
+  intersection.init_queue[queue_index] = agent_id;
 
   // initialize agent
   agent.active = 1;
@@ -487,7 +487,7 @@ kernel_trafficSimulation(int numPeople, float currentTime, LC::Agent *agents,
   if (threadIdx.x == 0) {
     mutex = 0;
   }
-  //  __syncthreads();
+  __syncthreads();  // Ensure mutex is reset before any thread proceeds
 
   auto &agent = agents[p];
   // 1. initialization
