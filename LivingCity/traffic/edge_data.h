@@ -52,7 +52,7 @@ struct EdgeData {
 //! \brief Data structure that hold essential information for a intersection
 struct IntersectionData {
   //! Potential queues (for each direction) in the intersection
-  int queue[100][10];
+  int queue[100][10] = {{-1}}; // Initialize to -1 to prevent reading garbage values
   //! Entering eid for each queue
   unsigned start_edge[100];
   //! Leaving eid for each queue

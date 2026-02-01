@@ -571,6 +571,10 @@ __device__ bool discharge_queue(LC::IntersectionData &intersection,
   }
 
   auto aid = q1[0];
+  // Safety check: ensure agent ID is valid (not uninitialized)
+  if (aid < 0) {
+    return false;
+  }
   auto &agent = trafficPersonVec[aid];
   if (not agent.in_queue) { // bug walk around: agent has been reassigned to a
                             // queue
