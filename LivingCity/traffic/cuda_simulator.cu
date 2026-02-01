@@ -219,6 +219,11 @@ __device__ void initialize_agent(int agent_id, LC::Agent &agent,
   auto &intersection = intersections[agent.init_intersection];
   // Use atomic operation to prevent race condition
   uint queue_index = atomicAdd(&(intersection.init_queue_rear), 1);
+  // Bounds check to prevent buffer overflow (init_queue size is 1000)
+  if (queue_index >= 1000) {
+    agent.active = 2; // Mark agent as finished to prevent further processing
+    return;
+  }
   intersection.init_queue[queue_index] = agent_id;
 
   // initialize agent
@@ -259,6 +264,11 @@ __device__ void check_stagnation(int agent_id, LC::Agent &agent,
     // try to place the agent to the queue again
     // Use atomic operation to prevent race condition
     uint requeue_index = atomicAdd(&(intersection.init_queue_rear), 1);
+    // Bounds check to prevent buffer overflow (init_queue size is 1000)
+    if (requeue_index >= 1000) {
+      agent.active = 2; // Mark agent as finished to prevent further processing
+      return;
+    }
     intersection.init_queue[requeue_index] = agent_id;
   }
   auto &queue = intersection.queue[agent.queue_idx];
