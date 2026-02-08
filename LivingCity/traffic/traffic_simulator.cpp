@@ -92,7 +92,9 @@ void TrafficSimulator::simulateInGPU(float startTime, float endTime,
   std::cout << "LaneMap size = " << lanemap_data.size() << std::endl;
   std::cout << "Intersections size = " << intersections.size() << std::endl;
 
+  fprintf(stderr, "[DEBUG] Calling init_cuda...\n");
   init_cuda(true, agents, edgesData, lanemap_data, intersections);
+  fprintf(stderr, "[DEBUG] init_cuda completed successfully\n");
 
   initCudaBench.stopAndEndBenchmark();
 
@@ -113,8 +115,10 @@ void TrafficSimulator::simulateInGPU(float startTime, float endTime,
   unsigned int simulations_steps = 0;
   // 2. Run GPU Simulation
   while (startTime < endTime) {
+    fprintf(stderr, "[DEBUG] Simulation step %u, time=%.1f\n", simulations_steps, startTime);
     cuda_simulate(startTime, agents.size(), intersections.size(), deltaTime_,
                   numBlocks, CUDAThreadsPerBlock);
+    fprintf(stderr, "[DEBUG] cuda_simulate completed for step %u\n", simulations_steps);
 
     simulations_steps += 1;
     startTime += deltaTime_;

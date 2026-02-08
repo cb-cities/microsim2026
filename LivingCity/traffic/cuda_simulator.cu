@@ -738,6 +738,7 @@ void cuda_simulate(float currentTime, uint numPeople, uint numIntersections,
       numIntersections, edgesData_d, intersections_d, trafficPersonVec_d,
       laneMap_d);
   gpuErrchk(cudaPeekAtLastError());
+  gpuErrchk(cudaDeviceSynchronize()); // Catch kernel runtime errors
   intersectionBench.stopMeasuring();
 
   peopleBench.startMeasuring();
@@ -746,6 +747,7 @@ void cuda_simulate(float currentTime, uint numPeople, uint numIntersections,
       numPeople, currentTime, trafficPersonVec_d, edgesData_d, laneMap_d,
       intersections_d, deltaTime);
   gpuErrchk(cudaPeekAtLastError());
+  gpuErrchk(cudaDeviceSynchronize()); // Catch kernel runtime errors
   peopleBench.stopMeasuring();
   //    if (random_bool(gen)){
   //        peopleBench.startMeasuring();
