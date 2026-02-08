@@ -77,6 +77,8 @@ void init_cuda(bool fistInitialization, // create buffers
                std::vector<uchar> &laneMap,
                std::vector<LC::IntersectionData> &intersections) {
 
+  fprintf(stderr, "[DEBUG] init_cuda: agents=%zu (size=%zu bytes)\n",
+          agents.size(), agents.size() * sizeof(LC::Agent));
   { // agents
     size_t size = agents.size() * sizeof(LC::Agent);
     if (fistInitialization)
@@ -85,7 +87,10 @@ void init_cuda(bool fistInitialization, // create buffers
     gpuErrchk(cudaMemcpy(trafficPersonVec_d, agents.data(), size,
                          cudaMemcpyHostToDevice));
   }
+  fprintf(stderr, "[DEBUG] init_cuda: agents OK\n");
 
+  fprintf(stderr, "[DEBUG] init_cuda: edgesData=%zu (size=%zu bytes)\n",
+          edgesData.size(), edgesData.size() * sizeof(LC::EdgeData));
   { // edgeData
     size_t sizeD = edgesData.size() * sizeof(LC::EdgeData);
     if (fistInitialization)
@@ -94,6 +99,10 @@ void init_cuda(bool fistInitialization, // create buffers
     gpuErrchk(cudaMemcpy(edgesData_d, edgesData.data(), sizeD,
                          cudaMemcpyHostToDevice));
   }
+  fprintf(stderr, "[DEBUG] init_cuda: edgesData OK\n");
+
+  fprintf(stderr, "[DEBUG] init_cuda: laneMap=%zu (size=%zu bytes)\n",
+          laneMap.size(), laneMap.size() * sizeof(uchar));
   { // laneMap
     size_t sizeL = laneMap.size() * sizeof(uchar);
     if (fistInitialization)
@@ -103,6 +112,11 @@ void init_cuda(bool fistInitialization, // create buffers
         cudaMemcpy(laneMap_d, laneMap.data(), sizeL, cudaMemcpyHostToDevice));
     halfLaneMap = laneMap.size() / 2;
   }
+  fprintf(stderr, "[DEBUG] init_cuda: laneMap OK\n");
+
+  fprintf(stderr, "[DEBUG] init_cuda: intersections=%zu (size=%zu bytes, each=%zu bytes)\n",
+          intersections.size(), intersections.size() * sizeof(LC::IntersectionData),
+          sizeof(LC::IntersectionData));
   { // intersections
     size_t sizeI = intersections.size() * sizeof(LC::IntersectionData);
     if (fistInitialization)
@@ -111,7 +125,10 @@ void init_cuda(bool fistInitialization, // create buffers
     gpuErrchk(cudaMemcpy(intersections_d, intersections.data(), sizeI,
                          cudaMemcpyHostToDevice));
   }
+  fprintf(stderr, "[DEBUG] init_cuda: intersections OK\n");
+
   printMemoryUsage();
+  fprintf(stderr, "[DEBUG] init_cuda: complete\n");
 } //
 
 //! free gpu memories
