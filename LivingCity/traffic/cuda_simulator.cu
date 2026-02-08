@@ -35,11 +35,14 @@ LC::EdgeData *edgesData_d;
 LC::IntersectionData *intersections_d;
 uchar *laneMap_d;
 
-__managed__ bool readFirstMapC = true;
-__managed__ uint mapToReadShift;
-__managed__ uint mapToWriteShift;
-__managed__ int mutex = 0;
-__managed__ uint halfLaneMap;
+// Host-only variables (no __managed__ needed)
+bool readFirstMapC = true;
+uint halfLaneMap;
+
+// Device variables accessed from GPU kernels
+__device__ uint mapToReadShift;
+__device__ uint mapToWriteShift;
+__device__ int mutex = 0;
 
 #define gpuErrchk(ans)                                                         \
   { gpuAssert((ans), __FILE__, __LINE__); }
@@ -737,14 +740,18 @@ void cuda_simulate(float currentTime, uint numPeople, uint numIntersections,
   ////////////////////////////////////////////////////////////
   // 1. CHANGE MAP: set map to use and clean the other
   if (readFirstMapC) {
-    mapToReadShift = 0;
-    mapToWriteShift = halfLaneMap;
+    uint readShift = 0;
+    uint writeShift = halfLaneMap;
+    gpuErrchk(cudaMemcpyToSymbol(mapToReadShift, &readShift, sizeof(uint)));
+    gpuErrchk(cudaMemcpyToSymbol(mapToWriteShift, &writeShift, sizeof(uint)));
     gpuErrchk(
         cudaMemset(&laneMap_d[halfLaneMap], -1,
                    halfLaneMap * sizeof(unsigned char))); // clean second half
   } else {
-    mapToReadShift = halfLaneMap;
-    mapToWriteShift = 0;
+    uint readShift = halfLaneMap;
+    uint writeShift = 0;
+    gpuErrchk(cudaMemcpyToSymbol(mapToReadShift, &readShift, sizeof(uint)));
+    gpuErrchk(cudaMemcpyToSymbol(mapToWriteShift, &writeShift, sizeof(uint)));
     gpuErrchk(
         cudaMemset(&laneMap_d[0], -1,
                    halfLaneMap * sizeof(unsigned char))); // clean first half
