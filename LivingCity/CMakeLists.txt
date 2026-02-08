@@ -99,7 +99,7 @@ cuda_add_library(lmicrosim_cuda
         traffic/simulation_interface.h
         traffic/cuda_simulator.h
         traffic/cuda_simulator.cu
-        OPTIONS -arch sm_50)
+        OPTIONS -arch sm_75)
 
 target_link_libraries(lmicrosim_cuda ${CUDA_LIBRARIES})
 
