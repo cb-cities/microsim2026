@@ -101,15 +101,21 @@ void init_cuda(bool fistInitialization, // create buffers
   }
   fprintf(stderr, "[DEBUG] init_cuda: edgesData OK\n");
 
-  fprintf(stderr, "[DEBUG] init_cuda: laneMap=%zu (size=%zu bytes)\n",
-          laneMap.size(), laneMap.size() * sizeof(uchar));
+  fprintf(stderr, "[DEBUG] init_cuda: laneMap=%zu (size=%zu bytes), fistInit=%d\n",
+          laneMap.size(), laneMap.size() * sizeof(uchar), (int)fistInitialization);
   { // laneMap
     size_t sizeL = laneMap.size() * sizeof(uchar);
-    if (fistInitialization)
+    if (fistInitialization) {
+      fprintf(stderr, "[DEBUG] init_cuda: laneMap cudaMalloc...\n");
       gpuErrchk(
           cudaMalloc((void **)&laneMap_d, sizeL)); // Allocate array on device
+      fprintf(stderr, "[DEBUG] init_cuda: laneMap cudaMalloc OK, ptr=%p\n", (void*)laneMap_d);
+    }
+    fprintf(stderr, "[DEBUG] init_cuda: laneMap cudaMemcpy (src=%p, dst=%p, size=%zu)...\n",
+            (void*)laneMap.data(), (void*)laneMap_d, sizeL);
     gpuErrchk(
         cudaMemcpy(laneMap_d, laneMap.data(), sizeL, cudaMemcpyHostToDevice));
+    fprintf(stderr, "[DEBUG] init_cuda: laneMap cudaMemcpy OK\n");
     halfLaneMap = laneMap.size() / 2;
   }
   fprintf(stderr, "[DEBUG] init_cuda: laneMap OK\n");
